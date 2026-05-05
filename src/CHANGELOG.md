@@ -1,5 +1,49 @@
 # viem
 
+## 2.48.10
+
+### Patch Changes
+
+- [#4579](https://github.com/wevm/viem/pull/4579) [`d413d1be25674e33dfcbe0fdf883aa18268034bc`](https://github.com/wevm/viem/commit/d413d1be25674e33dfcbe0fdf883aa18268034bc) Thanks [@deodad](https://github.com/deodad)! - Added `virtualAddresses` metadata to Tempo fill transaction capabilities.
+
+- [#4547](https://github.com/wevm/viem/pull/4547) [`bb4a63f0632910079d2a33653fadfc4f7ee31aa1`](https://github.com/wevm/viem/commit/bb4a63f0632910079d2a33653fadfc4f7ee31aa1) Thanks [@IrshadKohl51](https://github.com/IrshadKohl51)! - Aligned `sendTransactionSync` `dataSuffix` behavior with `sendTransaction` so that calls passing only `dataSuffix` (without `data`) correctly append to `data ?? '0x'` instead of being silently dropped.
+
+## 2.48.9
+
+### Patch Changes
+
+- [#4570](https://github.com/wevm/viem/pull/4570) [`00228343d7a278d3930971b745c50c65c22a932b`](https://github.com/wevm/viem/commit/00228343d7a278d3930971b745c50c65c22a932b) Thanks [@mattsse](https://github.com/mattsse)! - **viem/tempo:** Fixed Tempo zone encrypted deposit payload encoding to match the zone protocol.
+
+- [#4541](https://github.com/wevm/viem/pull/4541) [`1ab557ec1bd2f60a9a1f851d2474028bf32b682c`](https://github.com/wevm/viem/commit/1ab557ec1bd2f60a9a1f851d2474028bf32b682c) Thanks [@PaulRBerg](https://github.com/PaulRBerg)! - Added `multicall3` contract address to `hyperEvm` chain definition.
+
+## 2.48.8
+
+### Patch Changes
+
+- [#4573](https://github.com/wevm/viem/pull/4573) [`6df91c4bd23bcc83b82b2c058e685fc85d18f98f`](https://github.com/wevm/viem/commit/6df91c4bd23bcc83b82b2c058e685fc85d18f98f) Thanks [@jxom](https://github.com/jxom)! - `viem/tempo`: Added `capabilities` to `TransactionRequestTempo` and forwarded it through `formatTransactionRequest`.
+
+## 2.48.7
+
+### Patch Changes
+
+- [#4567](https://github.com/wevm/viem/pull/4567) [`ef3f4334f81bffc40bc2666103d3f2210f6da004`](https://github.com/wevm/viem/commit/ef3f4334f81bffc40bc2666103d3f2210f6da004) Thanks [@jxom](https://github.com/jxom)! - `viem/tempo`: Preserved `keyType`, `keyId`, and `keyData` from the input request when no account is present in `formatTransactionRequest`.
+
+## 2.48.6
+
+### Patch Changes
+
+- [#4564](https://github.com/wevm/viem/pull/4564) [`d55c4a5a74112d594e306b7ed7a714d5b17a0d43`](https://github.com/wevm/viem/commit/d55c4a5a74112d594e306b7ed7a714d5b17a0d43) Thanks [@jxom](https://github.com/jxom)! - Stripped basic-auth credentials (`user:pass@`) from URLs surfaced in
+  error meta-messages (`HttpRequestError`, `WebSocketRequestError`,
+  `RpcRequestError`, `TimeoutError`).
+
+## 2.48.5
+
+### Patch Changes
+
+- [#4561](https://github.com/wevm/viem/pull/4561) [`e1d2ffdcbf1235165e03e4e17871a69655b886b1`](https://github.com/wevm/viem/commit/e1d2ffdcbf1235165e03e4e17871a69655b886b1) Thanks [@emmajam](https://github.com/emmajam)! - Added `blockTimestamp` formatting for transaction responses.
+
+- [#4559](https://github.com/wevm/viem/pull/4559) [`8d8f243d08757f115fccca7f4e644996e954d0b0`](https://github.com/wevm/viem/commit/8d8f243d08757f115fccca7f4e644996e954d0b0) Thanks [@jxom](https://github.com/jxom)! - Added override for `zoneModerato(6)` (`Zone A`) and `zoneModerato(7)` (`Zone B`) names and RPC URLs.
+
 ## 2.48.4
 
 ### Patch Changes

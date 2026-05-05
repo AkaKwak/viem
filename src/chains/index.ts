@@ -595,7 +595,9 @@ export { spicy } from './definitions/spicy.js'
 export { stable } from './definitions/stable.js'
 export { stableTestnet } from './definitions/stableTestnet.js'
 export {
+  /** @deprecated */
   statusSepolia,
+  /** @deprecated */
   statusSepolia as statusNetworkSepolia,
 } from './definitions/statusNetworkSepolia.js'
 export { step } from './definitions/step.js'
