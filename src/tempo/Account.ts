@@ -4,7 +4,7 @@ import * as P256 from 'ox/P256'
 import * as PublicKey from 'ox/PublicKey'
 import * as Secp256k1 from 'ox/Secp256k1'
 import * as Signature from 'ox/Signature'
-import { KeyAuthorization, SignatureEnvelope } from 'ox/tempo'
+import { Channel, KeyAuthorization, SignatureEnvelope } from 'ox/tempo'
 import * as WebAuthnP256 from 'ox/WebAuthnP256'
 import * as WebCryptoP256 from 'ox/WebCryptoP256'
 import type {
@@ -27,6 +27,8 @@ export type Account_base<source extends string = string> = RequiredBy<
 > & {
   /** Key type. */
   keyType: SignatureEnvelope.Type
+  /** Sign fn. */
+  sign: NonNullable<LocalAccount['sign']>
   /** Sign transaction fn. */
   signTransaction: <
     serializer extends
@@ -40,6 +42,10 @@ export type Account_base<source extends string = string> = RequiredBy<
         }
       | undefined,
   ) => Promise<Hex.Hex>
+  /** Sign voucher fn. */
+  signVoucher: (
+    parameters: signVoucher.Parameters,
+  ) => Promise<signVoucher.ReturnValue>
 }
 
 export type RootAccount = Account_base<'root'> & {
@@ -56,6 +62,21 @@ export type RootAccount = Account_base<'root'> & {
 export type AccessKeyAccount = Account_base<'accessKey'> & {
   /** Access key ID. */
   accessKeyAddress: Address.Address
+  /**
+   * Signs a hash.
+   *
+   * By default, access key accounts sign through a keychain envelope so the
+   * signature authorizes the parent account.
+   *
+   * Set `raw` to `true` to sign directly with the access key, without keychain
+   * hashing or keychain enveloping.
+   */
+  sign: (parameters: {
+    /** Hash to sign. */
+    hash: Hex.Hex
+    /** Sign directly with the access key, without keychain hashing or enveloping. */
+    raw?: boolean | undefined
+  }) => Promise<Hex.Hex>
 }
 
 export type Account = OneOf<RootAccount | AccessKeyAccount>
@@ -377,6 +398,44 @@ export declare namespace fromWebCryptoP256 {
     from.ReturnValue<options>
 }
 
+export async function signVoucher(
+  account: LocalAccount,
+  parameters: signVoucher.Parameters,
+): Promise<signVoucher.ReturnValue> {
+  return account.sign!({
+    hash: getVoucherSignPayload(parameters),
+  })
+}
+
+function getVoucherSignPayload(parameters: signVoucher.Parameters) {
+  const { chainId, channel, cumulativeAmount } = parameters
+  const channelId =
+    typeof channel === 'string'
+      ? channel
+      : Channel.computeId(channel, {
+          chainId,
+        })
+
+  return Channel.getVoucherSignPayload({
+    chainId,
+    channelId,
+    cumulativeAmount,
+  })
+}
+
+export declare namespace signVoucher {
+  type Parameters = {
+    /** Chain ID. */
+    chainId: number | bigint
+    /** Channel descriptor or ID. */
+    channel: Channel.computeId.Channel | Hex.Hex
+    /** Total voucher amount signed for the channel. */
+    cumulativeAmount: bigint
+  }
+
+  type ReturnValue = Hex.Hex
+}
+
 export async function signKeyAuthorization(
   account: LocalAccount,
   parameters: signKeyAuthorization.Parameters,
@@ -431,7 +490,8 @@ function fromBase(parameters: fromBase.Parameters): Account_base {
     includePrefix: false,
   })
 
-  async function sign({ hash }: { hash: Hex.Hex }) {
+  async function sign({ hash, raw }: { hash: Hex.Hex; raw?: boolean }) {
+    if (raw) return await parameters.sign({ hash })
     const innerHash =
       parentAddress && internal_version === 'v2'
         ? keccak256(Hex.concat('0x04', hash, parentAddress))
@@ -495,6 +555,11 @@ function fromBase(parameters: fromBase.Parameters): Account_base {
     },
     async signTypedData(typedData) {
       return await sign({ hash: hashTypedData(typedData) })
+    },
+    async signVoucher(parameters) {
+      return await sign({
+        hash: getVoucherSignPayload(parameters),
+      })
     },
     publicKey,
     source,

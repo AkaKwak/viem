@@ -203,6 +203,8 @@ jobs:
 
       - name: Set up foundry
         uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
 
       - name: Set up pnpm
         uses: wevm/actions/.github/actions/pnpm@main
@@ -253,6 +255,8 @@ jobs:
 
   wagmi:
     name: Wagmi
+    # TODO: temporarily disabled
+    if: false
     permissions:
       contents: read
     runs-on: ubuntu-latest

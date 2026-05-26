@@ -303,6 +303,12 @@ async function serializeTempo(
     if (feePayerSignature === null || feePayer) return null
     return undefined
   })()
+  const hasPrefilledFeePayerSignature =
+    typeof transaction.feePayerSignature !== 'undefined' &&
+    transaction.feePayerSignature !== null
+  const shouldStripFeeTokenForSponsorship =
+    (feePayer === true && (!signature || !feePayerSignature)) ||
+    (!signature && hasPrefilledFeePayerSignature)
 
   const transaction_ox = {
     ...rest,
@@ -325,10 +331,11 @@ async function serializeTempo(
     ...(nonce ? { nonce: BigInt(nonce) } : {}),
   } satisfies TxTempo.TxEnvelopeTempo
 
-  // If we have marked the transaction as intended to be paid
-  // by a fee payer (feePayer: true), we will not use the fee token
-  // as the fee payer will choose their fee token.
-  if (feePayer === true) delete transaction_ox.feeToken
+  // Sender does not commit to `feeToken` under sponsorship. Strip it
+  // for the sender sign payload and the partial sponsorship handoff envelope.
+  // Keep it only on the final broadcast envelope so the chain can verify
+  // the fee payer.
+  if (shouldStripFeeTokenForSponsorship) delete transaction_ox.feeToken
 
   if (signature && typeof transaction.feePayer === 'object') {
     const tx = TxTempo.from(transaction_ox, {
@@ -358,7 +365,13 @@ async function serializeTempo(
     })
   }
 
-  if (feePayer === true) {
+  if (feePayer === true || (!signature && hasPrefilledFeePayerSignature)) {
+    // Fee payer signature was prefilled during `eth_fillTransaction` -- emit
+    // a full envelope with both signatures to skip `eth_signRawTransaction`.
+    if (signature && feePayerSignature)
+      return TxTempo.serialize(transaction_ox, {
+        signature,
+      })
     if (signature)
       return TxTempo.serialize(transaction_ox, {
         format: 'feePayer',
@@ -372,8 +385,12 @@ async function serializeTempo(
 
   return TxTempo.serialize(
     // If we have specified a fee payer, the user will not be signing over the fee token.
-    // Defer the fee token signing to the fee payer.
-    { ...transaction_ox, ...(feePayer ? { feeToken: undefined } : {}) },
+    // Defer the fee token signing to the fee payer. Once the fee payer has signed,
+    // keep `feeToken` so the broadcast envelope carries the token the chain must charge.
+    {
+      ...transaction_ox,
+      ...(feePayer && !feePayerSignature ? { feeToken: undefined } : {}),
+    },
     {
       feePayerSignature: undefined,
       signature,

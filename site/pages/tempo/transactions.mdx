@@ -7,16 +7,16 @@ Tempo Transactions are a Tempo-native EIP-2718 transaction type designed for pay
 ## Setup 
 
 In order to use Tempo Transactions, ensure that you have set up your Viem client
-with the `tempoModerato` chain.
+with `Chain.testnet`.
 
 ```ts twoslash [viem.config.ts]
 import { createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { tempoModerato } from 'viem/chains' // [!code focus]
+import { Chain } from 'viem/tempo' // [!code focus]
 
 export const client = createWalletClient({
   account: privateKeyToAccount('0x...'),
-  chain: tempoModerato, // [!code focus]
+  chain: Chain.testnet, // [!code focus]
   transport: http(),
 })
 ```
@@ -47,11 +47,11 @@ const receipt = await client.sendTransactionSync({
 ```tsx twoslash [viem.config.ts] filename="viem.config.ts" filename="viem.config.ts"
 import { createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { tempoModerato } from 'viem/chains'
+import { Chain } from 'viem/tempo'
 
 export const client = createWalletClient({
   account: privateKeyToAccount('0x...'),
-  chain: tempoModerato,
+  chain: Chain.testnet,
   transport: http(),
 })
 ```
@@ -64,11 +64,11 @@ You can also set a default `feeToken` globally by extending the chain.
 ```ts twoslash [example.ts]
 import { createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { tempoModerato } from 'viem/chains'
+import { Chain } from 'viem/tempo'
 
 export const client = createWalletClient({
   account: privateKeyToAccount('0x...'),
-  chain: tempoModerato.extend({ // [!code focus] 
+  chain: Chain.testnet.extend({ // [!code focus] 
     feeToken: '0x20c0000000000000000000000000000000000001'  // [!code focus]
   }), // [!code focus]
   transport: http(),
@@ -79,6 +79,31 @@ export const client = createWalletClient({
 :::info
 See a full guide on [paying fees in any stablecoin](https://docs.tempo.xyz/guide/payments/pay-fees-in-any-stablecoin).
 :::
+
+You can validate a fee token before submitting a transaction or saving it as a fee preference.
+
+```ts twoslash [example.ts]
+import { client } from './viem.config'
+import { Actions } from 'viem/tempo'
+
+const feeToken = '0x20c0000000000000000000000000000000000001'
+
+await Actions.fee.validateToken(client, {
+  token: feeToken,
+})
+```
+
+#### Common Errors
+
+`invalid fee token` means the token cannot be used to pay fees. Fee tokens must be unpaused USD-denominated TIP-20 tokens.
+
+`FeeTokenNotTip20Error` means the token is not registered as a TIP-20 token. TIP-20 token addresses use the `0x20c0...` address prefix.
+
+`FeeTokenNotUsdError` means the token is a TIP-20 token, but its currency is not `USD`.
+
+`FeeTokenPausedError` means the token is currently paused and cannot be used for fees.
+
+If validation passes but submission fails, check that the account has enough fee token balance and that the Fee AMM has liquidity for the selected token.
 
 ### Fee Sponsorship
 
@@ -102,11 +127,11 @@ const receipt = await client.sendTransactionSync({
 ```tsx twoslash [viem.config.ts] filename="viem.config.ts"
 import { createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { tempoModerato } from 'viem/chains'
+import { Chain } from 'viem/tempo'
 
 export const client = createWalletClient({
   account: privateKeyToAccount('0x...'),
-  chain: tempoModerato,
+  chain: Chain.testnet,
   transport: http(),
 })
 ```
@@ -147,11 +172,11 @@ const receipt = await client.sendTransactionSync({
 ```tsx twoslash [viem.config.ts] filename="viem.config.ts"
 import { createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { tempoModerato } from 'viem/chains'
+import { Chain } from 'viem/tempo'
 
 export const client = createWalletClient({
   account: privateKeyToAccount('0x...'),
-  chain: tempoModerato,
+  chain: Chain.testnet,
   transport: http(),
 })
 ```
@@ -198,11 +223,11 @@ const receipt = await client.sendTransactionSync({
 ```tsx twoslash [viem.config.ts] filename="viem.config.ts"
 import { createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { tempoModerato } from 'viem/chains'
+import { Chain } from 'viem/tempo'
 
 export const client = createWalletClient({
   account: privateKeyToAccount('0x...'),
-  chain: tempoModerato,
+  chain: Chain.testnet,
   transport: http(),
 })
 ```
@@ -243,11 +268,11 @@ const [receipt1, receipt2, receipt3] = await Promise.all([
 ```tsx twoslash [viem.config.ts] filename="viem.config.ts"
 import { createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { tempoModerato } from 'viem/chains'
+import { Chain } from 'viem/tempo'
 
 export const client = createWalletClient({
   account: privateKeyToAccount('0x...'),
-  chain: tempoModerato,
+  chain: Chain.testnet,
   transport: http(),
 })
 ```
@@ -277,11 +302,11 @@ const hash2 = await client.sendTransaction({
 ```tsx twoslash [viem.config.ts] filename="viem.config.ts"
 import { createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { tempoModerato } from 'viem/chains'
+import { Chain } from 'viem/tempo'
 
 export const client = createWalletClient({
   account: privateKeyToAccount('0x...'),
-  chain: tempoModerato,
+  chain: Chain.testnet,
   transport: http(),
 })
 ```
@@ -310,11 +335,11 @@ const receipt = await client.sendTransactionSync({
 ```tsx twoslash [viem.config.ts] filename="viem.config.ts"
 import { createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { tempoModerato } from 'viem/chains'
+import { Chain } from 'viem/tempo'
 
 export const client = createWalletClient({
   account: privateKeyToAccount('0x...'),
-  chain: tempoModerato,
+  chain: Chain.testnet,
   transport: http(),
 })
 ```
